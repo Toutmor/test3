@@ -1,0 +1,33 @@
+L'attente est calculée quand le régime moteur est non nul et la vitesse est nulle.
+// Get SPN Array for Engine Scheme
+     AnalyseStruct engineStruct = this.mySuperMap.get(NodBoxConfig.EngineSchemeSpnName);
+     if (engineStruct != null) {
+      // Calculate the Waiting Time
+      if (engineStruct.currValue > 0) {
+engineStruct = régime moteur? Oui
+analyseStruct = vitesse? Oui
+       // Start of Waiting Time sequence
+       if ((analyseStruct.precValue > 0) && 
+       (analyseStruct.currValue == 0)) {
+        // Increase Number of Waiting Time
+        this.waitingTimeNumber++;
+        // Update Duration
+        this.waitingTimeDuration += (analyseStruct.currTS - analyseStruct.precTS) / 2;
+
+        // Inside a Waiting Time sequence
+       } 
+       else if ((analyseStruct.precValue == 0) 
+       && (analyseStruct.currValue == 0)) {
+        // Update Duration
+        this.waitingTimeDuration += (analyseStruct.currTS - analyseStruct.precTS);
+
+        // End of Waiting Time sequence
+       } else if ((analyseStruct.precValue == 0) && (analyseStruct.currValue > 0)) {
+        // Update Duration
+        this.waitingTimeDuration += (analyseStruct.currTS - analyseStruct.precTS) / 2;
+       }
+      }
+     } else {
+      // Add Warning
+      this.isAnalyseWarning = true;
+      this.lastAnalyseWarning += "\nCannot evaluate Waiting Time, the SPN for Engine Scheme is not present!";

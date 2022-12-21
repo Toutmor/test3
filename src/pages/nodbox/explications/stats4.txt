@@ -1,0 +1,94 @@
+La consommation peut être de plusieurs types: cumulative ou une valeur en L/h
+Je te propose de ne traiter que la version cumulative.
+On a donc une valeur totale qui est renvoyée par la box (toujours croissante)
+Les valeurs affichées au L/100km ou L/h sont donc issues de la dérivation de cette valeur cumulée par rapport à la distance ou le temps.
+
+je ne reçois pas la consommation avec les services de la box qu'on m'a donné. Rapproche toi de Thierry, ce n'est pas normal
+Elles sont filtrées, voir AcceptedEntryStorageForamtion.java:
+if (currSpn.equalsIgnoreCase(NodBoxConfig.FuelConsumptionSpnName)) { // Fuel
+    // Consumption
+    // SPN
+    // Get SPN Array
+    analyseStruct = this.mySuperMap.get(currSpn);
+
+    // Check Fuel Consumption Type
+    if (this.fuelConsumptionType.equalsIgnoreCase(NodBoxConfig.FuelConsumptionTypeCycle)) {
+     // Get Max Value information
+     if (analyseStruct.currValue < analyseStruct.precValue) {
+      // Set values
+      this.fuelConsumption += this.fuelConsumptionMaxValue;
+
+     }
+     // Real time fuel consumption for curve display and text display
+     double current_fuel_consumption = getFuelConsumption();
+     if (analyseStruct.currTS > analyseStruct.precTS){
+si currTS correspond au temps courant et precTS correspond au temps qui le précéde, cette condition n'est-elle pas toujours vraie? On pouvait recevoir les données par burst dans le precedent produit donc avoir plusieurs valeurs avec le même timestamp
+      if(last_speed > 1){
+       double real_time_fuel_consumption = (360000 * (current_fuel_consumption - last_fuel_consumption) / ((analyseStruct.currTS - last_fuel_consumption_ts) * last_speed));
+
+       fuel_consumption_buffer.add(real_time_fuel_consumption);
+       fuel_consumption_timestamp_buffer.add(analyseStruct.currTS);
+      }
+      else{
+       // Clearing buffer to have a bigger derivate value on tip out
+       fuel_consumption_timestamp_buffer.clear();
+       fuel_consumption_buffer.clear();     
+      }
+      double real_time_fuel_rate = 3600 * (current_fuel_consumption - last_fuel_consumption) / (analyseStruct.currTS - last_fuel_consumption_ts);
+      fuel_rate_buffer.add(real_time_fuel_rate);
+      fuel_rate_timestamp_buffer.add(analyseStruct.currTS);
+     }
+     last_fuel_consumption = current_fuel_consumption;
+     last_fuel_consumption_ts = analyseStruct.currTS;
+
+
+     // Cleaning too old values from buffer
+     if(fuel_rate_timestamp_buffer.size() != 0){
+      for (int i = 0; i < fuel_rate_timestamp_buffer.size(); i++){
+       if(fuel_rate_timestamp_buffer.get(i) + FUEL_COMSUPTION_BUFFER_TIME <= analyseStruct.currTS){
+    A quoi correspond FUEL_COMSUPTION_BUFFER_TIME ? C'est la largeur (durée) de la fenetre de filtrage pour le calcul de conso instantannée
+//System.out.println("Removing " + fuel_rate_timestamp_buffer.get(i) + " - TS = " + fuel_rate_timestamp_buffer.get(i));
+        fuel_rate_timestamp_buffer.remove(i);
+        fuel_rate_buffer.remove(i);
+       }
+      }
+     }
+
+     // Cleaning too old values from buffer and computing mean fuel consumption value
+     if(fuel_consumption_timestamp_buffer.size() != 0){
+      for (int i = 0; i < fuel_consumption_timestamp_buffer.size(); i++){
+       if(fuel_consumption_timestamp_buffer.get(i) + FUEL_COMSUPTION_BUFFER_TIME <= last_fuel_consumption_ts){
+        //System.out.println("Removing " + fuel_consumption_timestamp_buffer.get(i) + " - TS = " + fuel_consumption_timestamp_buffer.get(i));
+        fuel_consumption_timestamp_buffer.remove(i);
+        fuel_consumption_buffer.remove(i);
+       }
+      }
+     }
+
+    } else if (this.fuelConsumptionType.equalsIgnoreCase(NodBoxConfig.FuelConsumptionTypeCumulative)) {
+     // Check if the previous value is set
+     if (analyseStruct.currTS > analyseStruct.precTS) {
+      // Ignore corrupted Value
+      if (analyseStruct.currValue > analyseStruct.precValue) {
+       // Set values
+       this.fuelConsumption += analyseStruct.currValue - analyseStruct.precValue;
+      }
+     }
+
+    } else if (this.fuelConsumptionType.equalsIgnoreCase(NodBoxConfig.FuelConsumptionTypeFuelRate)) {
+     // Check if the previous value is set
+     if (analyseStruct.currTS > analyseStruct.precTS) {
+      // Calculate Average
+      this.fuelAvgDuration += analyseStruct.currTS - analyseStruct.precTS;
+      this.fuelConsumption += ((analyseStruct.currValue + analyseStruct.precValue) / 2) * (analyseStruct.currTS - analyseStruct.precTS);
+     }
+
+    } else if (this.fuelConsumptionType.equalsIgnoreCase(NodBoxConfig.FuelConsumptionTypeMilligram)) {
+     // Untreated
+    } else if (this.fuelConsumptionType.equalsIgnoreCase(NodBoxConfig.FuelConsumptionTypeNeuralNetwork)) {
+     // Nothing To Do, Treated by the Neural Network
+    } else {
+     // Untreated
+    }
+
+   }

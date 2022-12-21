@@ -1,0 +1,37 @@
+Intégration de la vitesse : distance = vitesse_moyenne * temps_parcours / 3600
+
+mean_fuel_consumption = 100 * total_fuel_consumption / trip_distance 
+
+total_CO2_rejection = total_fuel_consumption * 2.65
+
+private final int FUEL_COMSUPTION_BUFFER_TIME = 2000;
+
+if ((Double)data.get(6) == 0){
+			braking_aff.setText("non");
+		}
+		else{
+			braking_aff.setText("oui");
+		}
+		if ((Double)data.get(7) == 0){
+			clutch_aff.setText("non");
+		}
+		else{
+			clutch_aff.setText("oui");
+		}
+
+
+
+if (trip_distance > 0){
+			// Mean fuel consumption
+			// Mean_fuel_consumption = 100 * (mL / 1000) / (m / 1000) => L/ 100km 
+			mean_fuel_consumption = 100 * total_fuel_consumption / trip_distance;
+			// Fuel rate
+			// L/h = (mL / 1000) / (s / 3600)
+			mean_fuel_rate = 3.6 * total_fuel_consumption / trip_duration;
+			// Mean CO2 rejection
+			mean_CO2_rejection = mean_fuel_consumption * 26.5;
+		}
+		else{
+			mean_fuel_consumption = -1;
+			mean_fuel_rate = -1;
+		}

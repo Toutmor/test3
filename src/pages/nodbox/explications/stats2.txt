@@ -1,0 +1,31 @@
+La levée de pied est calculée 
+quand 
+la position de pédale d'accélérateur est < seuil 
+(ici 0,1) et la vitesse > seuil (ici 0,1).
+Si ces conditions sont remplies 
+on accumule le temps et la distance 
+dans cet état sur tout le parcours.
+
+if ((treatData) && (!this.getCurrentGear().equalsIgnoreCase("N")) && (!this.getCurrentGear().equalsIgnoreCase("D"))) {
+        // Calculate the Tip Out
+        if ((accPedalStruct.currValue < 0.1) && 
+        (analyseStruct.currValue > 0.1)) {
+(analyseStruct.currValue = 
+valeur courante de la vitesse? Oui
+accPedalStruct.currValue  = 
+valeur courante de la position accélérateur? Oui
+         // Evaluate Tip Out
+         this.tipOutDuration += (analyseStruct.currTS - analyseStruct.precTS) / 2;
+         this.tipOutDistance += ((analyseStruct.currValue + analyseStruct.precValue) / 2) * ((analyseStruct.currTS - analyseStruct.precTS) / 2);
+analyseStruct.currTS = tps réel? Timestamp courant
+         // Set Inside Tip Out State
+         this.insideTipOutState = true;
+        }
+       }// Looking for End Of Tip Out Cycle
+      if (this.insideTipOutState) {
+       // Evaluate Tip Out
+       this.tipOutDuration += (analyseStruct.currTS - analyseStruct.precTS) / 2;
+       this.tipOutDistance += ((analyseStruct.currValue + analyseStruct.precValue) / 2) * ((analyseStruct.currTS - analyseStruct.precTS) / 2);
+       // Set Inside Tip Out State
+       this.insideTipOutState = false;
+      }
