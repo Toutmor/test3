@@ -6138,6 +6138,11 @@ react-native-drawer@^2.5.1:
     prop-types "^15.5.8"
     tween-functions "^1.0.1"
 
+react-native-element-dropdown@^2.3.1:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/react-native-element-dropdown/-/react-native-element-dropdown-2.3.1.tgz#f17b0723b13628a1ec01c6cdb652429823d20476"
+  integrity sha512-L7b4uXuKkSdUHkeubV2gvgxdxvFx+lXu2KlPrEbWOlaVrMyIiojhZtAzXHPD07HJUzJnubY+1YYNUq5RAJzLbA==
+
 react-native-elements@^3.4.2:
   version "3.4.2"
   resolved "https://registry.yarnpkg.com/react-native-elements/-/react-native-elements-3.4.2.tgz#66602be9c5e0e0a2a831913adec80ff6518d1ee2"

@@ -23,6 +23,8 @@ import {createNewStudent} from '../actions/auth.actions'
 import { Modal } from 'react-native';
 import { BackHandler } from 'react-native';
 import * as Sentry from '@sentry/react-native';
+import {Dropdown} from 'react-native-element-dropdown';
+import axios from 'axios'
 
 const options = [
 	{label: "Mme", value: "F"},
@@ -35,7 +37,12 @@ const options = [
 		this.state={
 			selectedButton: 'F',
             showChoices:false,
-            stageName:''
+            stageName:'',
+            city:null,
+             cityName:'',
+             isFocus:false,
+             cityDatas:[],
+
 		}
 		this.onSelect=this.onSelect.bind(this);
 	}
@@ -43,6 +50,33 @@ const options = [
 	onSelect = (item) => {
 		this.setState({selectedButton: item});
 	};
+  async fetchclient(){
+    const token = await AsyncStorage.getItem("token_access")
+    const url= 'https://api.cleandata.link/api/others/enterprise';
+    const headers = {
+      "Authorization": `Bearer ${token}`,
+    };
+    //const responseBeta = await axios.get(url, {headers})
+    await axios.get(url, {headers}).then(responseBeta  =>{
+    console.log(JSON.stringify(responseBeta.data));
+    var count = Object.keys(responseBeta.data).length;
+        let cityArray = [];
+        for (var i = 0; i < count; i++) {
+          cityArray.push({
+            value: responseBeta.data[i].id,
+            label: responseBeta.data[i].name,
+          });
+    } 
+    this.setState({cityDatas:cityArray})
+    console.log(this.state.cityDatas)
+    })
+    
+    .catch(function(error){
+      console.log(error)
+    })
+    
+  }
+
     
   homeParcours() {
     try {
@@ -66,6 +100,7 @@ const options = [
   
   componentDidMount(){
     BackHandler.addEventListener('backPress', () => {return true});
+    this.fetchclient()
   }
 
   renderTextInput = (field) => {
@@ -429,6 +464,7 @@ const options = [
   createNewStudent = async (values) => {
     try {
           values.sexe = this.state.selectedButton
+          values.enterprise = this.state.cityName
           values.type_profile = "student"
           const response = await this.props.dispatch(createNewStudent(values))
          console.log(response);
@@ -499,7 +535,7 @@ const options = [
       onSubmit = async  (values) => {
         try {
           values.sexe = this.state.selectedButton
-       
+          values.enterprise = this.state.cityName
           await this.createNewStudent(values)
           console.log("indexBefore:  " + this.props.createUser.indexStudent);
        
@@ -523,6 +559,7 @@ const options = [
 
 	render(){
     const {handleSubmit,createNewStudent} = this.props
+    console.log(this.state.cityName, 'recu')
 		return(
       <View style={styles.app}>
           
@@ -604,10 +641,37 @@ const options = [
 							component={this.renderTextInput}
 							keyboardType="email-address"
 						/>
+            {/*
            	<Field name="enterprise"
 							placeholder="Entreprise"
 							component={this.renderTextInput}
 						/>
+            */}
+            <Dropdown
+         style={[styles.dropdown, this.state.isFocus && {borderColor: 'blue'}]}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={this.state.cityDatas}
+          search
+          maxHeight={300}
+          labelField="label"
+          valueField="value"
+          placeholder={ !this.state.isFocus ?'Selectionner client' : '...'}
+          searchPlaceholder="Search..."
+          value={this.state.city}
+          onFocus={() => this.setState({isFocus:true})}
+          onBlur={() => this.setState({isFocus:false})}
+          onChange={item => {
+            this.setState({city:item.value});
+            this.setState({cityName:item.label});
+            this.setState({isFocus:false});
+            
+          }}
+          
+         
+        />
             <Field name="service"
 							placeholder="Service"
 							component={this.renderTextInput}
@@ -705,7 +769,44 @@ headerTitle: {
     // paddingHorizontal:16,
     // paddingBottom: 8
 },
-  
+dropdown: {
+  height: 60,
+  //borderColor: 'gray',
+  //borderWidth: 0.5,
+  borderRadius: 25,
+  paddingHorizontal:16,
+  marginVertical: 15,
+  backgroundColor:'rgba(255, 255,255,0.2)',
+  fontSize:16,
+},
+icon: {
+  marginRight: 5,
+},
+label: {
+  position: 'absolute',
+  backgroundColor: 'white',
+  left: 22,
+  top: 8,
+  zIndex: 999,
+  paddingHorizontal: 8,
+  fontSize: 16,
+},
+placeholderStyle: {
+  fontSize: 16,
+  color:'#ffffff',
+},
+selectedTextStyle: {
+  fontSize: 16,
+  color:'#ffffff',
+},
+iconStyle: {
+  width: 20,
+  height: 20,
+},
+inputSearchStyle: {
+  height: 40,
+  fontSize: 16,
+},  
   
 });
 
